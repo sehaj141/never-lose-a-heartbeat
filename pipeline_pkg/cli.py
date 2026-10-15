@@ -16,9 +16,19 @@ import time
 import urllib.request
 from typing import Optional
 
-from .storage import StorageEngine, DEFAULT_DB_PATH
-from .collector import MockCollector
-from .sync_manager import SyncManager
+pkg_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(pkg_dir)
+if parent_dir not in sys.path:
+    sys.path.insert(0, parent_dir)
+
+try:
+    from .storage import StorageEngine, DEFAULT_DB_PATH
+    from .collector import MockCollector
+    from .sync_manager import SyncManager
+except (ImportError, ValueError):
+    from pipeline_pkg.storage import StorageEngine, DEFAULT_DB_PATH
+    from pipeline_pkg.collector import MockCollector
+    from pipeline_pkg.sync_manager import SyncManager
 
 
 def cmd_status(args):

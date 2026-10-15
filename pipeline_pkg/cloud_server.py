@@ -16,7 +16,17 @@ import threading
 import time
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
-from .analyzer import process_window
+
+# Ensure parent directory is in sys.path for direct script execution
+pkg_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(pkg_dir)
+if parent_dir not in sys.path:
+    sys.path.insert(0, parent_dir)
+
+try:
+    from .analyzer import process_window
+except (ImportError, ValueError):
+    from pipeline_pkg.analyzer import process_window
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger("cloud_server")
