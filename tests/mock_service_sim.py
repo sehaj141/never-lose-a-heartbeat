@@ -122,6 +122,8 @@ class MockSensorServer:
 
                     if from_index is None:
                         self.current_idx[sensor] += count
+                        # 40 samples at 400 Hz represents 0.1 seconds of data
+                        time.sleep(0.09)
 
         except Exception:
             pass

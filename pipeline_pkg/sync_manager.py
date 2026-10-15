@@ -145,9 +145,9 @@ class SyncManager:
             if session_id:
                 if self.mode == "online":
                     # Catch-up or live streaming: keep flushing backlog
-                    synced = self.sync_backlog_step(session_id, batch_size=800)
+                    synced = self.sync_backlog_step(session_id, batch_size=4000)
                     if synced == 0:
-                        time.sleep(0.5)
+                        time.sleep(0.2)
                 else:
                     # Offline mode: execute local Section 3 computations
                     self.run_local_offline_processing(session_id)
