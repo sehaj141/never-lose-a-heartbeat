@@ -6,7 +6,9 @@ session restart tracking, and retry protocol.
 
 import json
 import logging
+import os
 import socket
+import sys
 import time
 import zlib
 from typing import Optional, Tuple, Dict, Any
