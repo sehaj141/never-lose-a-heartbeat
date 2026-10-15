@@ -1,6 +1,6 @@
 """
 Convert Markdown documentation to clean, publication-ready PDFs using headless Edge.
-Ensures seamless 1-click preview in Google Drive and PDF readers.
+Disables browser headers/footers (no file URLs or timestamps at the bottom).
 """
 
 import os
@@ -13,7 +13,6 @@ PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 def md_to_simple_html(md_text: str, title: str) -> str:
-    # Basic markdown to HTML converter with clean styling
     lines = md_text.split("\n")
     html_lines = []
     in_code_block = False
@@ -21,7 +20,19 @@ def md_to_simple_html(md_text: str, title: str) -> str:
 
     css = """
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; line-height: 1.5; color: #24292e; max-width: 850px; margin: 40px auto; padding: 0 30px; font-size: 13.5px; }
+        @page {
+            margin: 15mm 20mm;
+            size: auto;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            line-height: 1.5;
+            color: #24292e;
+            max-width: 850px;
+            margin: 0 auto;
+            padding: 0;
+            font-size: 13.5px;
+        }
         h1 { border-bottom: 2px solid #eaecef; padding-bottom: 0.3em; font-size: 22px; color: #0366d6; margin-top: 0; }
         h2 { border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; font-size: 17px; margin-top: 24px; color: #24292e; }
         h3 { font-size: 15px; margin-top: 20px; }
@@ -34,7 +45,6 @@ def md_to_simple_html(md_text: str, title: str) -> str:
         pre code { background: none; padding: 0; }
         blockquote { border-left: 4px solid #dfe2e5; color: #6a737d; padding: 0 1em; margin: 0; }
         hr { border: 0; height: 1px; background: #e1e4e8; margin: 20px 0; }
-        .badge { background: #28a745; color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: bold; }
     </style>
     """
 
@@ -62,7 +72,7 @@ def md_to_simple_html(md_text: str, title: str) -> str:
             if re.match(r"^\|?[\s\-:]+\|[\s\-:]+\|?", stripped):
                 continue
             cells = [c.strip() for c in stripped.strip("|").split("|")]
-            tag = "th" if ("Status" in stripped or "Metric" in stripped or "Criterion" in stripped or "Guarantee" in stripped or "Deliverable" in stripped) else "td"
+            tag = "th" if ("Status" in stripped or "Metric" in stripped or "Criterion" in stripped or "Guarantee" in stripped or "Deliverable" in stripped or "Test ID" in stripped) else "td"
             row_html = "<tr>" + "".join(f"<{tag}>{c}</{tag}>" for c in cells) + "</tr>"
             html_lines.append(row_html)
             continue
@@ -86,7 +96,6 @@ def md_to_simple_html(md_text: str, title: str) -> str:
         elif stripped.startswith("* ") or stripped.startswith("- "):
             html_lines.append(f"<li>{stripped[2:]}</li>")
         else:
-            # Inline formatting
             formatted = re.sub(r"\*\*(.*?)\*\*", r"<strong>\1</strong>", stripped)
             formatted = re.sub(r"`(.*?)`", r"<code>\1</code>", formatted)
             html_lines.append(f"<p>{formatted}</p>")
@@ -107,25 +116,26 @@ def convert_file(md_path: str, pdf_path: str):
     with open(temp_html, "w", encoding="utf-8") as f:
         f.write(html_content)
 
+    # Note: --no-pdf-header-footer completely suppresses browser headers/footers (file paths, URLs, dates)
     cmd = [
         EDGE_EXE,
         "--headless",
         "--disable-gpu",
+        "--no-pdf-header-footer",
         f"--print-to-pdf={pdf_path}",
         temp_html
     ]
     subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     if os.path.exists(temp_html):
         os.remove(temp_html)
-    print(f"Created PDF: {pdf_path}")
+    print(f"Created clean PDF without headers/footers: {pdf_path}")
 
 
 if __name__ == "__main__":
     docs = [
         "DESIGN_NOTE.md",
         "DELIVERABLE_3_FAILURE_TEST_EVIDENCE.md",
-        "DELIVERABLE_4_RESOURCE_PROFILE.md",
-        "DELIVERABLE_5_DEMO_VIDEO_GUIDE.md"
+        "DELIVERABLE_4_RESOURCE_PROFILE.md"
     ]
     for doc in docs:
         full_md = os.path.join(PROJECT_DIR, doc)
